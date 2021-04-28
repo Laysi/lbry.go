@@ -724,3 +724,31 @@ func (d *Client) WalletRemove(id string) (*Wallet, error) {
 	response := new(Wallet)
 	return response, d.call(response, "wallet_remove", map[string]interface{}{"wallet_id": id})
 }
+
+func (d *Client) SyncHash(walletID *string) (*string, error) {
+	response := new(string)
+	args := struct {
+		WalletID *string `json:"wallet_id,omitempty"`
+	}{
+		WalletID: walletID,
+	}
+	structs.DefaultTagName = "json"
+	return response, d.call(response, "sync_hash", structs.Map(args))
+}
+
+func (d *Client) SyncApply(password, data, walletID *string, blocking *bool) (*SyncApplyResponse, error) {
+	response := new(SyncApplyResponse)
+	args := struct {
+		Passsword *string `json:"password,omitempty"`
+		Data      *string `json:"data,omitempty"`
+		WalletID  *string `json:"wallet_id,omitempty"`
+		Blocking  *bool   `json:"blocking,omitempty"`
+	}{
+		Passsword: password,
+		Data:      data,
+		WalletID:  walletID,
+		Blocking:  blocking,
+	}
+	structs.DefaultTagName = "json"
+	return response, d.call(response, "sync_apply", structs.Map(args))
+}

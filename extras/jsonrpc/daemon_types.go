@@ -641,3 +641,8 @@ type WalletList struct {
 	PageSize   uint64   `json:"page_size"`
 	TotalPages uint64   `json:"total_pages"`
 }
+
+type SyncApplyResponse struct {
+	Data string `json:"data"`
+	Hash string `json:"hash"`
+}
