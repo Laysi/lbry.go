@@ -29,6 +29,7 @@ type Client struct {
 	Logger        *log.Logger
 	serverAddress string
 	extraHeaders  map[string]string
+	proxy         *url.URL
 }
 
 // ClientOpts allow to provide extra parameters to NewClient:
@@ -99,6 +100,11 @@ func (c Client) prepareParams(params map[string]interface{}) (string, error) {
 	return form.Encode(), nil
 }
 
+func (c Client) WithProxy(proxy *url.URL) Client {
+	c.proxy = proxy
+	return c
+}
+
 func (c Client) doCall(url string, payload string) ([]byte, error) {
 	var body []byte
 	c.Logger.Debugf("sending payload: %s", payload)
@@ -114,7 +120,20 @@ func (c Client) doCall(url string, payload string) ([]byte, error) {
 		req.Header.Set(k, v)
 	}
 
-	client := &http.Client{Timeout: timeout}
+	var client *http.Client
+	if c.proxy != nil {
+		client = &http.Client{
+			Timeout: timeout,
+			Transport: &http.Transport{
+				Proxy: http.ProxyURL(c.proxy),
+			},
+		}
+	} else {
+		client = &http.Client{
+			Timeout: timeout,
+		}
+	}
+
 	r, err := client.Do(req)
 	if err != nil {
 		return body, err
