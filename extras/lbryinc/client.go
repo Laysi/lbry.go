@@ -164,7 +164,11 @@ func (c Client) Call(object, method string, params map[string]interface{}) (Resp
 		return rd, err
 	}
 	if !ar.Success {
-		return rd, APIError{errors.New(*ar.Error)}
+		if ar.Error != nil {
+			return rd, APIError{errors.New(*ar.Error)}
+		} else {
+			return map[string]interface{}{"success": false}, nil
+		}
 	}
 	return *ar.Data, err
 }
