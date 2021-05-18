@@ -32,6 +32,8 @@ type Client struct {
 	proxy         *url.URL
 }
 
+var ErrUnsuccessResponse = errors.New("response not success and neither have error")
+
 // ClientOpts allow to provide extra parameters to NewClient:
 // - ServerAddress
 // - RemoteIP — to forward the IP of a frontend client making the request
@@ -167,7 +169,7 @@ func (c Client) Call(object, method string, params map[string]interface{}) (Resp
 		if ar.Error != nil {
 			return rd, APIError{errors.New(*ar.Error)}
 		} else {
-			return map[string]interface{}{"success": false}, nil
+			return rd, ErrUnsuccessResponse
 		}
 	}
 	return *ar.Data, err
