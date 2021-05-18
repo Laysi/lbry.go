@@ -163,7 +163,16 @@ func (c Client) Call(object, method string, params map[string]interface{}) (Resp
 	var ar APIResponse
 	err = json.Unmarshal(body, &ar)
 	if err != nil {
-		return rd, err
+		//deal with single "ok" string response of data field
+		result := ""
+		err2 := json.Unmarshal(body, &result)
+		if err2 != nil {
+			//try failed,return original error
+			return rd, err
+		}
+		ar.Data = (*ResponseData)(&map[string]interface{}{
+			"result": result,
+		})
 	}
 	if !ar.Success {
 		if ar.Error != nil {
