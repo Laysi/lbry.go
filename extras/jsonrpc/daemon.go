@@ -106,7 +106,7 @@ func debugParams(params map[string]interface{}) string {
 	return strings.Join(s, " ")
 }
 
-func (d *Client) callNoDecode(command string, params map[string]interface{}) (interface{}, error) {
+func (d *Client) CallNoDecode(command string, params map[string]interface{}) (interface{}, error) {
 	log.Debugln("jsonrpc: " + command + " " + debugParams(params))
 	r, err := d.conn.Call(command, params)
 	if err != nil {
@@ -120,8 +120,8 @@ func (d *Client) callNoDecode(command string, params map[string]interface{}) (in
 	return r.Result, nil
 }
 
-func (d *Client) call(response interface{}, command string, params map[string]interface{}) error {
-	result, err := d.callNoDecode(command, params)
+func (d *Client) Call(response interface{}, command string, params map[string]interface{}) error {
+	result, err := d.CallNoDecode(command, params)
 	if err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ func (d *Client) SetRPCTimeout(timeout time.Duration) {
 
 func (d *Client) AccountList(page uint64, pageSize uint64) (*AccountListResponse, error) {
 	response := new(AccountListResponse)
-	return response, d.call(response, "account_list", map[string]interface{}{
+	return response, d.Call(response, "account_list", map[string]interface{}{
 		"page":      page,
 		"page_size": pageSize,
 	})
@@ -148,12 +148,12 @@ func (d *Client) AccountList(page uint64, pageSize uint64) (*AccountListResponse
 
 func (d *Client) AccountListForWallet(walletID string) (*AccountListResponse, error) {
 	response := new(AccountListResponse)
-	return response, d.call(response, "account_list", map[string]interface{}{"wallet_id": walletID})
+	return response, d.Call(response, "account_list", map[string]interface{}{"wallet_id": walletID})
 }
 
 func (d *Client) SingleAccountList(accountID string) (*AccountListResponse, error) {
 	response := new(AccountListResponse)
-	return response, d.call(response, "account_list", map[string]interface{}{"account_id": accountID})
+	return response, d.Call(response, "account_list", map[string]interface{}{"account_id": accountID})
 }
 
 type AccountSettings struct {
@@ -175,12 +175,12 @@ func (d *Client) AccountSet(accountID string, settings AccountSettings) (*Accoun
 		AccountSettings: settings,
 	}
 	structs.DefaultTagName = "json"
-	return response, d.call(response, "account_set", structs.Map(args))
+	return response, d.Call(response, "account_set", structs.Map(args))
 }
 
 func (d *Client) AccountBalance(account *string) (*AccountBalanceResponse, error) {
 	response := new(AccountBalanceResponse)
-	return response, d.call(response, "account_balance", map[string]interface{}{
+	return response, d.Call(response, "account_balance", map[string]interface{}{
 		"account_id": account,
 	})
 }
@@ -188,7 +188,7 @@ func (d *Client) AccountBalance(account *string) (*AccountBalanceResponse, error
 // funds an account. If everything is true then amount is ignored
 func (d *Client) AccountFund(fromAccount string, toAccount string, amount string, outputs uint64, everything bool) (*AccountFundResponse, error) {
 	response := new(AccountFundResponse)
-	return response, d.call(response, "account_fund", map[string]interface{}{
+	return response, d.Call(response, "account_fund", map[string]interface{}{
 		"from_account": fromAccount,
 		"to_account":   toAccount,
 		"amount":       amount,
@@ -200,7 +200,7 @@ func (d *Client) AccountFund(fromAccount string, toAccount string, amount string
 
 func (d *Client) AccountCreate(accountName string, singleKey bool) (*Account, error) {
 	response := new(Account)
-	return response, d.call(response, "account_create", map[string]interface{}{
+	return response, d.Call(response, "account_create", map[string]interface{}{
 		"account_name": accountName,
 		"single_key":   singleKey,
 	})
@@ -208,21 +208,21 @@ func (d *Client) AccountCreate(accountName string, singleKey bool) (*Account, er
 
 func (d *Client) AccountRemove(accountID string) (*Account, error) {
 	response := new(Account)
-	return response, d.call(response, "account_remove", map[string]interface{}{
+	return response, d.Call(response, "account_remove", map[string]interface{}{
 		"account_id": accountID,
 	})
 }
 
 func (d *Client) AddressUnused(account *string) (*AddressUnusedResponse, error) {
 	response := new(AddressUnusedResponse)
-	return response, d.call(response, "address_unused", map[string]interface{}{
+	return response, d.Call(response, "address_unused", map[string]interface{}{
 		"account_id": account,
 	})
 }
 
 func (d *Client) TransactionShow(txid string) (*TransactionSummary, error) {
 	response := new(TransactionSummary)
-	return response, d.call(response, "transaction_show", map[string]interface{}{
+	return response, d.Call(response, "transaction_show", map[string]interface{}{
 		"txid": txid,
 	})
 }
@@ -232,7 +232,7 @@ func (d *Client) ChannelList(account *string, page uint64, pageSize uint64, wid 
 		return nil, errors.Err("pages start from 1")
 	}
 	response := new(ChannelListResponse)
-	return response, d.call(response, "channel_list", map[string]interface{}{
+	return response, d.Call(response, "channel_list", map[string]interface{}{
 		"account_id":       account,
 		"page":             page,
 		"page_size":        pageSize,
@@ -296,7 +296,7 @@ func (d *Client) ChannelCreate(name string, bid float64, options ChannelCreateOp
 		Blocking:             true,
 	}
 	structs.DefaultTagName = "json"
-	return response, d.call(response, "channel_create", structs.Map(args))
+	return response, d.Call(response, "channel_create", structs.Map(args))
 }
 
 type ChannelUpdateOptions struct {
@@ -323,7 +323,7 @@ func (d *Client) ChannelUpdate(claimID string, options ChannelUpdateOptions) (*T
 		Blocking:             true,
 	}
 	structs.DefaultTagName = "json"
-	return response, d.call(response, "channel_update", structs.Map(args))
+	return response, d.Call(response, "channel_update", structs.Map(args))
 }
 
 type StreamCreateOptions struct {
@@ -364,12 +364,12 @@ func (d *Client) StreamCreate(name, filePath string, bid float64, options Stream
 		StreamCreateOptions: &options,
 	}
 	structs.DefaultTagName = "json"
-	return response, d.call(response, "stream_create", structs.Map(args))
+	return response, d.Call(response, "stream_create", structs.Map(args))
 }
 
 func (d *Client) StreamAbandon(txID string, nOut uint64, accountID *string, blocking bool) (*ClaimAbandonResponse, error) {
 	response := new(ClaimAbandonResponse)
-	err := d.call(response, "stream_abandon", map[string]interface{}{
+	err := d.Call(response, "stream_abandon", map[string]interface{}{
 		"txid":             txID,
 		"nout":             nOut,
 		"account_id":       accountID,
@@ -408,12 +408,12 @@ func (d *Client) StreamUpdate(claimID string, options StreamUpdateOptions) (*Tra
 		Blocking:            true,
 	}
 	structs.DefaultTagName = "json"
-	return response, d.call(response, "stream_update", structs.Map(args))
+	return response, d.Call(response, "stream_update", structs.Map(args))
 }
 
 func (d *Client) ChannelAbandon(txID string, nOut uint64, accountID *string, blocking bool) (*TransactionSummary, error) {
 	response := new(TransactionSummary)
-	err := d.call(response, "channel_abandon", map[string]interface{}{
+	err := d.Call(response, "channel_abandon", map[string]interface{}{
 		"txid":             txID,
 		"nout":             nOut,
 		"account_id":       accountID,
@@ -441,12 +441,12 @@ func (d *Client) AddressList(account *string, address *string, page uint64, page
 		PageSize:  pageSize,
 	}
 	structs.DefaultTagName = "json"
-	return response, d.call(response, "address_list", structs.Map(args))
+	return response, d.Call(response, "address_list", structs.Map(args))
 }
 
 func (d *Client) StreamList(account *string, page uint64, pageSize uint64) (*StreamListResponse, error) {
 	response := new(StreamListResponse)
-	err := d.call(response, "stream_list", map[string]interface{}{
+	err := d.Call(response, "stream_list", map[string]interface{}{
 		"account_id":       account,
 		"include_protobuf": true,
 		"page":             page,
@@ -463,7 +463,7 @@ func (d *Client) ClaimList(account *string, page uint64, pageSize uint64) (*Clai
 		return nil, errors.Err("pages start from 1")
 	}
 	response := new(ClaimListResponse)
-	err := d.call(response, "claim_list", map[string]interface{}{
+	err := d.Call(response, "claim_list", map[string]interface{}{
 		"account_id":       account,
 		"page":             page,
 		"page_size":        pageSize,
@@ -477,12 +477,12 @@ func (d *Client) ClaimList(account *string, page uint64, pageSize uint64) (*Clai
 
 func (d *Client) Status() (*StatusResponse, error) {
 	response := new(StatusResponse)
-	return response, d.call(response, "status", map[string]interface{}{})
+	return response, d.Call(response, "status", map[string]interface{}{})
 }
 
 func (d *Client) TransactionList(account *string, wallet *string, page uint64, pageSize uint64) (*TransactionListResponse, error) {
 	response := new(TransactionListResponse)
-	return response, d.call(response, "transaction_list", map[string]interface{}{
+	return response, d.Call(response, "transaction_list", map[string]interface{}{
 		"account_id": account,
 		"wallet_id":  wallet,
 		"page":       page,
@@ -492,7 +492,7 @@ func (d *Client) TransactionList(account *string, wallet *string, page uint64, p
 
 func (d *Client) UTXOList(account *string, page uint64, pageSize uint64) (*UTXOListResponse, error) {
 	response := new(UTXOListResponse)
-	return response, d.call(response, "utxo_list", map[string]interface{}{
+	return response, d.Call(response, "utxo_list", map[string]interface{}{
 		"account_id": account,
 		"page":       page,
 		"page_size":  pageSize,
@@ -501,14 +501,14 @@ func (d *Client) UTXOList(account *string, page uint64, pageSize uint64) (*UTXOL
 
 func (d *Client) UTXORelease(account *string) (*UTXOReleaseResponse, error) {
 	response := new(UTXOReleaseResponse)
-	return response, d.call(response, "utxo_release", map[string]interface{}{
+	return response, d.Call(response, "utxo_release", map[string]interface{}{
 		"account_id": account,
 	})
 }
 
 func (d *Client) Get(uri string) (*GetResponse, error) {
 	response := new(GetResponse)
-	return response, d.call(response, "get", map[string]interface{}{
+	return response, d.Call(response, "get", map[string]interface{}{
 		"uri":              uri,
 		"include_protobuf": true,
 	})
@@ -516,7 +516,7 @@ func (d *Client) Get(uri string) (*GetResponse, error) {
 
 func (d *Client) FileList(page uint64, pageSize uint64) (*FileListResponse, error) {
 	response := new(FileListResponse)
-	return response, d.call(response, "file_list", map[string]interface{}{
+	return response, d.Call(response, "file_list", map[string]interface{}{
 		"include_protobuf": true,
 		"page":             page,
 		"page_size":        pageSize,
@@ -525,12 +525,12 @@ func (d *Client) FileList(page uint64, pageSize uint64) (*FileListResponse, erro
 
 func (d *Client) Version() (*VersionResponse, error) {
 	response := new(VersionResponse)
-	return response, d.call(response, "version", map[string]interface{}{})
+	return response, d.Call(response, "version", map[string]interface{}{})
 }
 
 func (d *Client) Resolve(urls string) (*ResolveResponse, error) {
 	response := new(ResolveResponse)
-	return response, d.call(response, "resolve", map[string]interface{}{
+	return response, d.Call(response, "resolve", map[string]interface{}{
 		"urls":             urls,
 		"include_protobuf": true,
 	})
@@ -556,12 +556,12 @@ func (d *Client) ClaimSearch(claimName, claimID, txid *string, nout *uint, page 
 		PageSize:        pageSize,
 	}
 	structs.DefaultTagName = "json"
-	return response, d.call(response, "claim_search", structs.Map(args))
+	return response, d.Call(response, "claim_search", structs.Map(args))
 }
 
 func (d *Client) ChannelExport(channelClaimID string, channelName, accountID *string) (*ChannelExportResponse, error) {
 	response := new(ChannelExportResponse)
-	return response, d.call(response, "channel_export", map[string]interface{}{
+	return response, d.Call(response, "channel_export", map[string]interface{}{
 		"channel_id":   channelClaimID,
 		"channel_name": channelName,
 		"account_id":   accountID,
@@ -570,7 +570,7 @@ func (d *Client) ChannelExport(channelClaimID string, channelName, accountID *st
 
 func (d *Client) ChannelImport(key string, walletID *string) (*ChannelImportResponse, error) {
 	response := new(ChannelImportResponse)
-	return response, d.call(response, "channel_import", map[string]interface{}{
+	return response, d.Call(response, "channel_import", map[string]interface{}{
 		"channel_data": key,
 		"wallet_id":    walletID,
 	})
@@ -578,7 +578,7 @@ func (d *Client) ChannelImport(key string, walletID *string) (*ChannelImportResp
 
 func (d *Client) SupportList(accountID *string, page uint64, pageSize uint64) (*SupportListResponse, error) {
 	response := new(SupportListResponse)
-	return response, d.call(response, "support_list", map[string]interface{}{
+	return response, d.Call(response, "support_list", map[string]interface{}{
 		"account_id": accountID,
 		"page":       page,
 		"page_size":  pageSize,
@@ -606,7 +606,7 @@ func (d *Client) SupportCreate(claimID string, amount string, tip *bool, account
 		Tip:               tip,
 	}
 	structs.DefaultTagName = "json"
-	return response, d.call(response, "support_create", structs.Map(args))
+	return response, d.Call(response, "support_create", structs.Map(args))
 }
 
 func (d *Client) SupportAbandon(claimID *string, txid *string, nout *uint, keep *string, accountID *string) (*TransactionSummary, error) {
@@ -630,7 +630,7 @@ func (d *Client) SupportAbandon(claimID *string, txid *string, nout *uint, keep 
 		Preview:   false,
 	}
 	structs.DefaultTagName = "json"
-	return response, d.call(response, "support_abandon", structs.Map(args))
+	return response, d.Call(response, "support_abandon", structs.Map(args))
 }
 
 func (d *Client) TxoSpend(txoType, claimID, txid, channelID, name, accountID *string) (*[]TransactionSummary, error) {
@@ -660,7 +660,7 @@ func (d *Client) TxoSpend(txoType, claimID, txid, channelID, name, accountID *st
 		IncludeFullTx: true,
 	}
 	structs.DefaultTagName = "json"
-	return response, d.call(response, "txo_spend", structs.Map(args))
+	return response, d.Call(response, "txo_spend", structs.Map(args))
 }
 
 func (d *Client) AccountAdd(accountName string, seed *string, privateKey *string, publicKey *string, singleKey *bool, walletID *string) (*Account, error) {
@@ -682,7 +682,7 @@ func (d *Client) AccountAdd(accountName string, seed *string, privateKey *string
 		WalletID:    walletID,
 	}
 	structs.DefaultTagName = "json"
-	return response, d.call(response, "account_add", structs.Map(args))
+	return response, d.Call(response, "account_add", structs.Map(args))
 }
 
 type WalletCreateOpts struct {
@@ -699,12 +699,12 @@ func (d *Client) WalletCreate(id string, opts *WalletCreateOpts) (*Wallet, error
 	}
 	opts.ID = id
 	structs.DefaultTagName = "json"
-	return response, d.call(response, "wallet_create", structs.Map(opts))
+	return response, d.Call(response, "wallet_create", structs.Map(opts))
 }
 
 func (d *Client) WalletAdd(id string) (*Wallet, error) {
 	response := new(Wallet)
-	return response, d.call(response, "wallet_add", map[string]interface{}{"wallet_id": id})
+	return response, d.Call(response, "wallet_add", map[string]interface{}{"wallet_id": id})
 }
 
 func (d *Client) WalletList(id string, page uint64, pageSize uint64) (*WalletList, error) {
@@ -717,12 +717,12 @@ func (d *Client) WalletList(id string, page uint64, pageSize uint64) (*WalletLis
 	if id != "" {
 		params["wallet_id"] = id
 	}
-	return response, d.call(response, "wallet_list", params)
+	return response, d.Call(response, "wallet_list", params)
 }
 
 func (d *Client) WalletRemove(id string) (*Wallet, error) {
 	response := new(Wallet)
-	return response, d.call(response, "wallet_remove", map[string]interface{}{"wallet_id": id})
+	return response, d.Call(response, "wallet_remove", map[string]interface{}{"wallet_id": id})
 }
 
 func (d *Client) SyncHash(walletID *string) (*string, error) {
@@ -733,7 +733,7 @@ func (d *Client) SyncHash(walletID *string) (*string, error) {
 		WalletID: walletID,
 	}
 	structs.DefaultTagName = "json"
-	return response, d.call(response, "sync_hash", structs.Map(args))
+	return response, d.Call(response, "sync_hash", structs.Map(args))
 }
 
 func (d *Client) SyncApply(password, data, walletID *string, blocking *bool) (*SyncApplyResponse, error) {
@@ -750,5 +750,5 @@ func (d *Client) SyncApply(password, data, walletID *string, blocking *bool) (*S
 		Blocking:  blocking,
 	}
 	structs.DefaultTagName = "json"
-	return response, d.call(response, "sync_apply", structs.Map(args))
+	return response, d.Call(response, "sync_apply", structs.Map(args))
 }
